@@ -121,16 +121,23 @@ button {
     <div id="capacityList"><div class="empty">جاري التحميل...</div></div>
   </div>
 
+  <!-- أعضاء OMS: كل من طلب OMS يُرشَّح ضمن الـ120. بعد اعتماد الدفع يربطه الأدمن بشيت بزنسه ليستقبل بيانات طلباته -->
+  <div class="glass section">
+    <h2>📲 أعضاء OMS — الربط بشيت البزنس <span class="badge" id="omsCount">0</span></h2>
+    <div id="omsList"><div class="empty">جاري التحميل...</div></div>
+  </div>
+
+  <!-- طلبات البزنسات: الاتفاقية الموقعة + طلب الكاش التشغيلي -->
+  <div class="glass section">
+    <h2>📝 طلبات البزنسات (اتفاقية / كاش) <span class="badge" id="brCount">0</span></h2>
+    <div id="brList"><div class="empty">جاري التحميل...</div></div>
+  </div>
+
   <!-- ✅ جديد: متابعة الفرانشايز (المدفوع/المتبقي/عدد البزنسات المضافة) — معلومات خاصة بالأدمن فقط.
        دفعات التقسيط تظهر في "اشتراكات بانتظار المراجعة" كـ "دفعة فرانشايز". -->
   <div class="glass section">
     <h2>🏛️ متابعة الفرانشايز <span class="badge" id="franchiseCount">0</span></h2>
     <div id="franchiseList"><div class="empty">جاري التحميل...</div></div>
-  </div>
-
-  <div class="glass section">
-    <h2>💳 دفعات بانتظار المراجعة <span class="badge" id="pendingCount">0</span></h2>
-    <div id="pendingList"><div class="empty">جاري التحميل...</div></div>
   </div>
 
   <div class="glass section">
@@ -225,7 +232,6 @@ function boot() {
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   document.getElementById('adminEmailLabel').textContent = USER_EMAIL;
-  loadPending();
   loadSubscriptions();
   loadParticipants();
   loadAuditLog();
@@ -235,6 +241,8 @@ function boot() {
   loadCapacity(); // ✅ جديد
   loadWaitlist(); // ✅ جديد
   loadFranchises();
+  loadOmsMembers();
+  loadBusinessRequests();
 }
 
 // ✅ جديد: عرض حافز الـAP التراكمي
@@ -298,6 +306,79 @@ async function loadCapacity() {
 }
 
 // ✅ متابعة الفرانشايز: المدفوع/المتبقي + عدد البزنسات المضافة (الأدمن يدخله يدويًا)
+const OMS_STATUS_AR = { waitlisted: 'قائمة الانتظار', awaiting_otp: '💳 بانتظار الدفع', awaiting_review: '⏳ دفع بانتظار الاعتماد', active: '✅ فعّال' };
+async function loadOmsMembers() {
+  const el = document.getElementById('omsList');
+  try {
+    const data = await authGet('admin_oms_members');
+    const rows = data.rows || [];
+    document.getElementById('omsCount').textContent = rows.length;
+    if (!rows.length) { el.innerHTML = '<div class="empty">لا توجد طلبات OMS بعد</div>'; return; }
+    el.innerHTML = rows.map((r, i) => `
+      <div class="row">
+        <div class="info">
+          <div class="email">${esc(r.email)}</div>
+          <div class="meta">${esc(r.tierName)} · ${esc(OMS_STATUS_AR[r.status] || r.status)} · ${r.linked ? 'مربوط بـ ' + esc(r.businessName || r.sheetId) : 'غير مربوط بشيت'}</div>
+        </div>
+        <div class="btns">
+          ${r.status === 'active' ? `<button class="approve" data-oms="${i}">${r.linked ? 'تعديل الربط' : 'اربط بشيت'}</button>` : ''}
+        </div>
+      </div>`).join('');
+    el.querySelectorAll('[data-oms]').forEach(b => b.onclick = () => linkOmsMember(rows[+b.dataset.oms]));
+  } catch (e) { /* clearSessionAndReset تعاملت معها */ }
+}
+async function linkOmsMember(r) {
+  const sheetId = prompt('معرّف شيت البزنس (SheetID) لربطه بـ ' + r.email + ':', r.sheetId || '');
+  if (!sheetId) return;
+  const name = prompt('اسم البزنس / البراند:', r.businessName || '');
+  if (name === null) return;
+  try {
+    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'link_business', sheetId: sheetId.trim(), email: r.email, businessName: name.trim(), token: AUTH_TOKEN }) });
+    const d = await res.json();
+    if (d.error) { showToast('خطأ: ' + d.error); return; }
+    showToast('✓ تم الربط — المؤشر جاهز لاستقبال بيانات هذا البزنس');
+    loadOmsMembers(); loadBusinessList();
+  } catch (e) { showToast('فشل الاتصال'); }
+}
+
+async function loadBusinessRequests() {
+  const el = document.getElementById('brList');
+  try {
+    const data = await authGet('admin_business_requests');
+    const rows = (data.rows || []);
+    const open = rows.filter(r => r.status === 'submitted' || r.status === 'pending');
+    document.getElementById('brCount').textContent = open.length;
+    if (!rows.length) { el.innerHTML = '<div class="empty">لا توجد طلبات</div>'; return; }
+    el.innerHTML = rows.slice(0, 50).map((r, i) => {
+      const isAg = r.type === 'agreement';
+      const act = (r.status === 'submitted' || r.status === 'pending') ? (isAg
+        ? `<button class="approve" data-br="${i}" data-d="received">✓ تم الاستلام</button><button class="reject" data-br="${i}" data-d="rejected">رفض</button>`
+        : `<button class="approve" data-br="${i}" data-d="approved">قبول</button><button class="reject" data-br="${i}" data-d="rejected">رفض</button>`) : '';
+      const meta = isAg
+        ? `اتفاقية موقعة · <a href="${esc(r.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--gold);">فتح الرابط</a>`
+        : `كاش · طلبات ${esc(r.orders)} · سداد 36%: $${esc(r.due36)} · مقترح: $${esc(r.suggested)}`;
+      return `<div class="row"><div class="info"><div class="email">${esc(r.name)} <span style="opacity:.6">(${esc(r.email)})</span></div>
+        <div class="meta">${meta} · ${esc(r.status)}${r.approvedAmount ? ' · معتمد $' + esc(r.approvedAmount) : ''}</div></div><div class="btns">${act}</div></div>`;
+    }).join('');
+    el.querySelectorAll('[data-br]').forEach(b => b.onclick = () => decideBusinessRequest(rows[+b.dataset.br], b.dataset.d));
+  } catch (e) { }
+}
+async function decideBusinessRequest(r, decision) {
+  let amount = '';
+  if (decision === 'approved') {
+    amount = prompt('قيمة الكاش المعتمدة (USD) — المقترح $' + r.suggested + ':', r.suggested);
+    if (amount === null) return;
+  } else if (!confirm('تأكيد القرار؟')) return;
+  try {
+    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'decide_business_request', row: r.row, decision, amount, token: AUTH_TOKEN }) });
+    const d = await res.json();
+    if (d.error) { showToast('خطأ: ' + d.error); return; }
+    showToast('✓ تم'); loadBusinessRequests();
+  } catch (e) { showToast('فشل الاتصال'); }
+}
+
 async function loadFranchises() {
   const el = document.getElementById('franchiseList');
   try {
@@ -362,7 +443,7 @@ async function loadWaitlist() {
       <div class="row">
         <div class="info">
           <div class="email">${esc(r.email)}</div>
-          <div class="meta">${esc(TIER_LABELS_AR[r.tier] || r.tier)}${r.category === 'movement' ? ' · الحركة الاقتصادية (ما قبل الاشتراك)' : ''}${r.country ? ' · الدولة: ' + esc(r.country) : ''} · طلب بتاريخ ${esc(r.requestedAt)}</div>
+          <div class="meta">${esc(TIER_LABELS_AR[r.tier] || r.tier)}${r.category === 'movement' ? ' · مسار البناء والحركة الاقتصادية' : ' · مسار الانضمام إلى لاڤندرز'}${r.country ? ' · الدولة: ' + esc(r.country) : ''} · طلب بتاريخ ${esc(r.requestedAt)}</div>
         </div>
       </div>
     `).join('');
@@ -383,74 +464,6 @@ async function authGet(action) {
   const data = await res.json();
   if (data.code === 401 || data.code === 403) { clearSessionAndReset(data.error); throw new Error('denied'); }
   return data;
-}
-
-async function loadPending() {
-  try {
-    const data = await authGet('admin_pending_payments');
-    const rows = data.rows || [];
-    document.getElementById('pendingCount').textContent = rows.length;
-    const el = document.getElementById('pendingList');
-    if (!rows.length) { el.innerHTML = '<div class="empty">ما فيه دفعات بانتظار المراجعة</div>'; return; }
-    el.innerHTML = rows.map(r => `
-      <div class="row">
-        <div class="info">
-          <div class="email">${esc(r.email)}</div>
-          <div class="meta">$${r.amount} · مرجع: ${esc(r.txnRef) || '—'}${r.sellerEmail ? ' · بائع: ' + esc(r.sellerEmail) : ''}</div>
-        </div>
-        <div class="btns">
-          <button class="approve" onclick="decide(${r.row}, 'approved', this)">اعتماد</button>
-          <button class="reject" onclick="decide(${r.row}, 'rejected', this)">رفض</button>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) { /* clearSessionAndReset already handled it */ }
-}
-
-async function decide(row, decision, btn) {
-  // ✅ جديد: تأكيد إجباري قبل التنفيذ — العملية دي فورية وبتتعامل مع فلوس حقيقية
-  // ($513)، وقبل كده كانت بتتنفذ بضغطة واحدة بدون أي فرصة للتراجع لو حصل غلط
-  const label = decision === 'approved' ? 'اعتماد' : 'رفض';
-  if (!confirm('متأكد إنك عايز ' + label + ' الدفعة دي؟ العملية فورية.')) return;
-  btn.closest('.row').querySelectorAll('button').forEach(b => b.disabled = true);
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'admin_decide_payment', row, decision, token: AUTH_TOKEN })
-    });
-    const data = await res.json();
-    if (data.code === 401 || data.code === 403) { clearSessionAndReset(data.error); return; }
-    if (data.error) { showToast('خطأ: ' + data.error); btn.closest('.row').querySelectorAll('button').forEach(b => b.disabled = false); return; }
-    showToast(decision === 'approved' ? 'تم الاعتماد ✅' : 'تم الرفض');
-    loadPending();
-    loadParticipants();
-  } catch(e) {
-    showToast('فشل الاتصال');
-    btn.closest('.row').querySelectorAll('button').forEach(b => b.disabled = false);
-  }
-}
-
-async function loadSubscriptions() {
-  try {
-    const data = await authGet('admin_pending_subscriptions');
-    const rows = data.rows || [];
-    document.getElementById('subsCount').textContent = rows.length;
-    const el = document.getElementById('subsList');
-    if (!rows.length) { el.innerHTML = '<div class="empty">ما فيه اشتراكات بانتظار المراجعة</div>'; return; }
-    el.innerHTML = rows.map(r => `
-      <div class="row">
-        <div class="info">
-          <div class="email">${esc(r.email)}</div>
-          <div class="meta">${esc(TIER_LABELS_AR[r.tier] || r.tier)}${r.country ? ' · ' + esc(r.country) : ''} · $${r.amount} · مرجع: ${esc(r.txnRef) || '—'}</div>
-        </div>
-        <div class="btns">
-          <button class="approve" onclick="decideSub(${r.row}, 'approved', this)">اعتماد</button>
-          <button class="reject" onclick="decideSub(${r.row}, 'rejected', this)">رفض</button>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) { /* clearSessionAndReset already handled it */ }
 }
 
 async function decideSub(row, decision, btn) {
