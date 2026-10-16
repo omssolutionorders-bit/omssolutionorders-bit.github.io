@@ -94,6 +94,7 @@ input:checked + .slider:before { transform:translateX(-20px); }
       تسجيل خروج
     </button>
   </header>
+  <a href="agreement.pdf" download="لاڤندرز-لإدارة-البزنسات.pdf" style="display:block;text-align:center;margin:0 0 14px;padding:12px;border:1px solid var(--glass-border);border-radius:12px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;">📄 اتفاقية «لاڤندرز لإدارة البزنسات» — حمّلها PDF للتعبئة والتوقيع</a>
   <div id="content"><div class="empty">جاري التحميل...</div></div>
 </div>
 
@@ -244,9 +245,51 @@ function renderBusinessCard(b) {
         </label>
       </div>
 
+      ${renderRequests(b)}
+
       <div class="section-title">الاستحقاقات</div>
       ${entitlementsHtml}
     </div>`;
+}
+
+const REQ_AR = { submitted: '⏳ قيد المراجعة', received: '✅ تم استلام الاتفاقية', rejected: '❌ غير مقبول', pending: '⏳ بانتظار قرار الإدارة', approved: '✅ مقبول' };
+function renderRequests(b) {
+  const r = b.requests || {};
+  const ag = r.agreement;
+  const agHtml = ag
+    ? `<div class="ent-meta">الاتفاقية الموقعة: <b>${esc(REQ_AR[ag.status] || ag.status)}</b></div>`
+    : '<div class="ent-meta">لم ترفع الاتفاقية الموقعة بعد.</div>';
+  const canAg = !ag || ag.status !== 'received';
+  const cashHtml = (r.cash || []).map(c => `
+    <div class="ent-row"><div class="ent-top"><span class="ent-amount">${c.approvedAmount ? '$' + esc(c.approvedAmount) : 'طلب كاش'}</span>
+    <span class="badge-status badge-available">${esc(REQ_AR[c.status] || c.status)}</span></div>
+    <div class="ent-meta">${esc(c.requestedAt)} · سداد 36% المطلوب: $${esc(c.due36)}${c.status === 'approved' && !c.approvedAmount ? ' · تظهر قيمة الكاش بعد استلام اتفاقيتك الموقعة' : ''}</div></div>`).join('');
+  const m = r.m || {};
+  return `
+    <div class="section-title">الاتفاقية والكاش التشغيلي</div>
+    <div class="ent-meta" style="line-height:1.8;">بياناتك تُقيَّم بنقاط المؤشر وتتحرك مع إجمالي الطلبات. طلب الكاش اختياري: تسدّد 36% من جملة طلباتك المعتمدة نقداً (الطلب = 4.275$)؛ ويُصرف لك بعد اكتمال الأطواق الثلاثة: المالي والضماني والمستندي.</div>
+    ${agHtml}
+    ${canAg ? `<div style="margin:8px 0;"><input id="agLink-${esc(b.sheetId)}" placeholder="رابط الاتفاقية الموقعة (Drive)" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:transparent;color:var(--text);direction:ltr;">
+      <button onclick="submitAgreement('${esc(b.sheetId)}')" style="margin-top:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--gold);background:none;color:var(--gold);cursor:pointer;">رفع الرابط</button></div>` : ''}
+    <div class="ent-meta" style="margin-top:8px;">سداد 36% الحالي: <b>$${esc(m.due36 ?? 0)}</b> لعدد ${esc(m.orders ?? 0)} طلب</div>
+    <button onclick="requestCash('${esc(b.sheetId)}')" style="margin:8px 0;padding:8px 14px;border-radius:10px;border:1px solid var(--gold);background:none;color:var(--gold);cursor:pointer;">طلب كاش تشغيلي من الصندوق</button>
+    ${cashHtml}`;
+}
+async function bizPost(body) {
+  const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...body, token: AUTH_TOKEN }) });
+  return res.json();
+}
+async function submitAgreement(sheetId) {
+  const link = document.getElementById('agLink-' + sheetId).value.trim();
+  const d = await bizPost({ action: 'submit_agreement', sheetId, link });
+  if (d.error) { showToast(d.error); return; }
+  showToast('تم رفع الرابط — بانتظار مراجعة الإدارة'); loadPortal();
+}
+async function requestCash(sheetId) {
+  if (!confirm('تأكيد طلب الكاش التشغيلي؟ سيُرسل للإدارة للنظر فيه.')) return;
+  const d = await bizPost({ action: 'request_cash', sheetId });
+  if (d.error) { showToast(d.error); return; }
+  showToast('تم إرسال الطلب'); loadPortal();
 }
 
 async function toggleAutoAccept(sheetId, enabled, checkbox) {
