@@ -393,7 +393,7 @@ body::before {
         قرأت وأوافق على الشروط أعلاه
       </label>
       <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="acceptTerms()">متابعة</button>
-      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="clearSessionAndReset('لازم توافق على الشروط للمتابعة')">لا أوافق — تسجيل خروج</button>
+      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="declineTerms()">لا أوافق</button>
     </div>
   </div>
 </div>
@@ -442,6 +442,7 @@ body::before {
       <!-- ✅ جديد: شارة عضوية ڤندكس/ماقما — تظهر بس لو الدور مطابق (تحدّثها updateTabVisibility) -->
       <span id="tierBadge" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap;"></span>
     </div>
+    <button id="mySubsBtn" onclick="showSubscribeGate(true)" style="display:none;background:none;border:none;color:var(--gold);font-size:11px;cursor:pointer;padding:6px 8px;flex-shrink:0;">اشتراكاتي</button>
     <button id="accountActionBtn" onclick="handleAccountActionClick()"
       style="background:none;border:none;color:var(--text-faint);font-size:11px;cursor:pointer;padding:6px 8px;text-decoration:underline;flex-shrink:0;">
       تسجيل خروج
@@ -487,35 +488,6 @@ body::before {
       </div>
     </div>
 
-    <!-- Fund Value -->
-    <div class="section-title">قيمة حصتك في الصندوق</div>
-    <div id="stageBadge" style="font-size:11px;color:var(--text-faint);margin-bottom:10px;"></div>
-    <div class="glass fund-card fade-up-4" id="fundCard">
-      <div class="fund-row">
-        <div>
-          <div class="fund-current-label">القيمة الحالية</div>
-          <div class="fund-current-val" id="fundCurrentVal">—</div>
-        </div>
-        <div style="text-align:left;">
-          <div class="fund-entry">دفعت</div>
-          <div style="font-size:18px;font-weight:600;" id="fundEntryVal">—</div>
-          <!-- ✅ جديد: تاريخ الدخول كان محسوب بالباك اند (entryDate) لكن مش معروض خالص —
-               المستخدم مالوش أي فكرة من إمتى هو مشارك في الصندوق -->
-          <div style="font-size:10px;color:var(--text-faint);margin-top:2px;" id="fundEntryDate"></div>
-        </div>
-      </div>
-      <div class="fund-pnl pos" id="fundPnl">
-        <div>
-          <div class="fund-pnl-label">الربح / الخسارة</div>
-          <div class="fund-pnl-pct" id="fundPnlPct">—</div>
-        </div>
-        <div class="fund-pnl-val" id="fundPnlVal">—</div>
-      </div>
-      <div class="fund-actions" id="fundActions">
-        <button class="btn btn-primary" onclick="buyShare()">اشتري حصة</button>
-      </div>
-    </div>
-
     <!-- Chart -->
     <div class="section-title">أداء المؤشر</div>
     <div class="glass chart-card fade-up">
@@ -557,10 +529,42 @@ body::before {
   <!-- ── SCREEN: MARKET ── -->
   <div class="screen" id="screenMarket">
     <div style="padding:40px 0 20px; text-align:center;">
-      <div class="hero-eyebrow">السوق الداخلي</div>
+      <div class="hero-eyebrow">السوق الداخلي — لأصحاب الـ120 بزنس وبراند</div>
       <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--gold);">الحصص المتاحة</div>
     </div>
 
+    <!-- Fund Value -->
+    <div class="section-title">قيمة حصتك في الصندوق</div>
+    <div id="stageBadge" style="font-size:11px;color:var(--text-faint);margin-bottom:10px;"></div>
+    <div class="glass fund-card fade-up-4" id="fundCard">
+      <div class="fund-row">
+        <div>
+          <div class="fund-current-label">القيمة الحالية</div>
+          <div class="fund-current-val" id="fundCurrentVal">—</div>
+        </div>
+        <div style="text-align:left;">
+          <div class="fund-entry">دفعت</div>
+          <div style="font-size:18px;font-weight:600;" id="fundEntryVal">—</div>
+          <!-- ✅ جديد: تاريخ الدخول كان محسوب بالباك اند (entryDate) لكن مش معروض خالص —
+               المستخدم مالوش أي فكرة من إمتى هو مشارك في الصندوق -->
+          <div style="font-size:10px;color:var(--text-faint);margin-top:2px;" id="fundEntryDate"></div>
+        </div>
+      </div>
+      <div class="fund-pnl pos" id="fundPnl">
+        <div>
+          <div class="fund-pnl-label">الربح / الخسارة</div>
+          <div class="fund-pnl-pct" id="fundPnlPct">—</div>
+        </div>
+        <div class="fund-pnl-val" id="fundPnlVal">—</div>
+      </div>
+      <div class="fund-actions" id="fundActions">
+        <button class="btn btn-primary" onclick="buyShare()">اشتري حصة</button>
+      </div>
+    </div>
+
+
+    <a href="agreement.pdf" download="لاڤندرز-لإدارة-البزنسات.pdf" style="display:block;text-align:center;margin:0 0 14px;padding:12px;border:1px solid var(--glass-border);border-radius:12px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;">📄 اتفاقية «لاڤندرز لإدارة البزنسات» — حمّلها PDF للتعبئة والتوقيع</a>
+    <a href="business.html" style="display:block;text-align:center;margin:0 0 14px;padding:12px;border:1px solid var(--glass-border);border-radius:12px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;">🏪 بوابة بزنسك — طلباتك وتطبيقك واستحقاقاتك</a>
     <div class="glass market-card" id="marketList">
       <div class="market-empty">لا توجد حصص معروضة حالياً</div>
     </div>
@@ -673,7 +677,7 @@ body::before {
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
-  <button class="nav-item active" onclick="switchScreen('Home',this)">
+  <button class="nav-item active" id="navHomeBtn" onclick="switchScreen('Home',this)">
     <div class="nav-icon">◎</div>
     <div>الرئيسية</div>
     <div class="nav-dot"></div>
@@ -688,12 +692,12 @@ body::before {
     <div>الدليل</div>
     <div class="nav-dot"></div>
   </button>
-  <button class="nav-item" onclick="switchScreen('Components',this)">
+  <button class="nav-item" id="navComponentsBtn" onclick="switchScreen('Components',this)">
     <div class="nav-icon">▦</div>
     <div>المكونات</div>
     <div class="nav-dot"></div>
   </button>
-  <button class="nav-item" onclick="switchScreen('History',this)">
+  <button class="nav-item" id="navHistoryBtn" onclick="switchScreen('History',this)">
     <div class="nav-icon">◷</div>
     <div>الأرشيف</div>
     <div class="nav-dot"></div>
@@ -725,7 +729,35 @@ let globalData = null;
 let bankDetails = null;
 let mainChart  = null;
 // (ordersChart بتاع "توزيع الطلبات حسب البزنس" اتشال — مش من الأبعاد المعتمدة لتحليل الطلبات)
-let productsChart = null; // ✅ جديد: أكثر المنتجات طلبًا
+let productsChart = null; function renderMarket(data) {
+  if (!data.fund) return;
+  const list = data.fund.market || [];
+  const el   = document.getElementById('marketList');
+  if (list.length === 0) {
+    // ✅ جديد: تمييز "مفيش عروض حالياً" عن "أصلاً ما عندكش صلاحية تشوف السوق" —
+    // بعد إصلاح تسريب الخصوصية، المشتركين (لافا/سنوي) بيوصلهم array فاضي دايماً هنا
+    el.innerHTML = ['subscriber', 'fendex', 'magma'].includes(data.role)
+      ? '<div class="market-empty">🔒 السوق الداخلي متاح فقط للمشاركين الفعليين بالصندوق</div>'
+      : '<div class="market-empty">لا توجد حصص معروضة حالياً</div>';
+    return;
+  }
+  el.innerHTML = list.map(m => `
+    <div class="market-item">
+      <div>
+        <div class="market-seller">${esc(m.seller)}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:2px;">T+2</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="market-price">$${m.shareValue}</div>
+        ${USER_EMAIL && USER_EMAIL !== m.seller
+          ? `<button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="buyShare(${m.row}, ${m.shareValue})">شراء</button>`
+          : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ✅ جديد: أكثر المنتجات طلبًا
 let dailyTrendChart = null; // ✅ جديد: اتجاه الطلبات اليومي
 let locationChart = null; // ✅ جديد: توزيع الطلبات حسب الموقع
 let allWeights = [];
@@ -788,11 +820,11 @@ function renderAccountBar() {
   if (AUTH_TOKEN && USER_EMAIL) {
     emailEl.textContent = USER_EMAIL;
     btn.textContent = 'تسجيل خروج';
-    btn.onclick = null;
+    const ms = document.getElementById('mySubsBtn'); if (ms) ms.style.display = '';
   } else {
+    const ms2 = document.getElementById('mySubsBtn'); if (ms2) ms2.style.display = 'none';
     emailEl.textContent = 'زائر (بيانات تجريبية)';
     btn.textContent = 'تسجيل الدخول';
-    btn.onclick = null;
   }
 }
 function handleAccountActionClick() {
@@ -822,16 +854,27 @@ function handleDemoBannerClick() {
   showSubscribeGate(); // يشمل الزائر غير المسجّل (استكشاف أولًا، ثم تسجيل الدخول عند الاشتراك)
 }
 
-// ✅ تبويب "السوق" الداخلي متاح فقط لشركاء الـ120 والأدمن — مش لزوار ولا لمشتركي
-// باقة الداتا (يومي/سنوي)، بالظبط زي ما بيفلترها الباك اند فعليًا (action=market يرفض 403)
-function updateTabVisibility() {
-  const marketBtn = document.getElementById('navMarketBtn');
-  const canSeeMarket = currentRole === 'participant' || currentRole === 'admin';
-  marketBtn.style.display = canSeeMarket ? '' : 'none';
-  if (!canSeeMarket && document.getElementById('screenMarket').classList.contains('active')) {
-    switchScreen('Home', document.querySelector('.nav-item'));
-  }
+// ── فضاءات الدخول: مشارك الـ120 يُوجَّه للسوق الداخلي فقط (space=market)،
+// وإن كان له اشتراك بيانات آخر واختاره من نافذة اشتراكاته يرى لوحة البيانات (space=data).
+function getSpace() { try { return sessionStorage.getItem('lavndr_space') || ''; } catch (e) { return ''; } }
+function setSpace(v) { try { sessionStorage.setItem('lavndr_space', v || ''); } catch (e) {} }
+function show(id, on) { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; }
+function applySpace() {
+  const marketOnly = currentRole === 'participant' && getSpace() !== 'data';
+  const dataSpace  = currentRole === 'participant' && getSpace() === 'data';
+  const isAdmin    = currentRole === 'admin';
+  // السوق الداخلي: لأصحاب الـ120 (في فضاء السوق) وللأدمن فقط
+  show('navMarketBtn', marketOnly || isAdmin);
+  // شاشات البيانات: كل الأدوار عدا مشارك الـ120 في فضاء السوق
+  const showData = !marketOnly;
+  show('navHomeBtn', showData); show('navComponentsBtn', showData); show('navHistoryBtn', showData);
+  if (dataSpace && document.getElementById('screenMarket').classList.contains('active')) switchScreen('Home', document.getElementById('navHomeBtn'));
+  if (marketOnly && !document.getElementById('screenMarket').classList.contains('active')) switchScreen('Market', document.getElementById('navMarketBtn'));
+  if (!marketOnly && !isAdmin && document.getElementById('screenMarket').classList.contains('active')) switchScreen('Home', document.getElementById('navHomeBtn'));
+}
 
+function updateTabVisibility() {
+  applySpace();
   // ✅ جديد: تبويب "الدليل" (دليل ماقما) حصري لمشتركي باقة ماقما بس
   const magmaBtn = document.getElementById('navMagmaBtn');
   const canSeeMagma = currentRole === 'magma';
@@ -884,6 +927,7 @@ function bootDemoMode() {
 function clearSessionAndReset(message) {
   sessionStorage.removeItem('lavndr_token');
   sessionStorage.removeItem('lavndr_email');
+  try { sessionStorage.removeItem('lavndr_chooser_done'); } catch (e) {}
   AUTH_TOKEN = ''; USER_EMAIL = ''; currentRole = null;
   bankDetails = null; // ✅ تصفير أي بيانات مخزّنة من الجلسة السابقة مع باقي الحالة
   document.getElementById('termsModal').style.display = 'none'; // ✅ جديد: تنظيف كامل مع باقي الحالة
@@ -984,6 +1028,7 @@ async function loadData(isRetry) {
     renderDemoBanner();
     document.getElementById('loadingWrap').style.display = 'none';
     document.getElementById('mainWrap').style.display = 'block';
+    maybeShowSubscriptionChooser();
   } catch(e) {
     // ✅ إصلاح: فشل الاتصال (مثلاً السيرفر واقع أو مفيش إنترنت) بعد ما كان المستخدم
     // شايف بيانات حقيقية أو تجريبية، ما بيمسحش الداشبورد بالكامل برسالة خطأ حمراء
@@ -1003,7 +1048,25 @@ async function loadData(isRetry) {
 // ══════════════════════════════════════════════
 // شاشة بوابة الاشتراك (لطبقة "المشاهدين" — لافا اليومي / الباقة السنوية)
 // ══════════════════════════════════════════════
-async function showSubscribeGate() {
+let currentSubCtx = { tier: '', country: '' }; // الاشتراك الذي يعمل عليه المستخدم الآن (لتعدد الاشتراكات)
+
+function routeSubscriptionStatus(status) {
+  if (status.tier) currentSubCtx = { tier: status.tier, country: status.country || '' };
+  if (status.stage === 'franchise') return renderFranchiseScreen(status.franchise);
+  if (status.stage === 'active' && currentRole === 'participant' && ['oms_services', 'oms_products', 'oms_vip'].indexOf(status.tier) !== -1) { setSpace('market'); closeSubscribeGateModal(); applySpace(); return; }
+  if (status.stage === 'active' && tierInfoIsMovementLike(status.tier)) return renderMembershipActiveScreen(status);
+  if (status.stage === 'active') { closeSubscribeGateModal(); return; } // اشتراك مطالعة فعّال: لوحته هي الداشبورد نفسه
+  if (status.stage === 'awaiting_otp') return renderSubscribeOtpScreen(status);
+  if (status.stage === 'awaiting_review') return renderSubscribePendingScreen(status);
+  if (status.stage === 'waitlisted') {
+    return status.category === 'movement' ? renderPreSubscribedScreen(status) : renderWaitlistedScreen(status);
+  }
+  renderSubscribePickerScreen(status.availability, !!status.marketComplete, true);
+  const pend = gateTakePendingOffer();
+  if (pend) renderGateOffer(pend.offerKey, pend.variantTier);
+}
+
+async function showSubscribeGate(forcePicker) {
   const modal = document.getElementById('subscribeGateModal');
   modal.style.display = 'block';
   subscribeGateDismissedByUser = false;
@@ -1012,23 +1075,83 @@ async function showSubscribeGate() {
   try {
     // زائر بلا تسجيل دخول: يستكشف المسارات والبطاقات والتفاصيل، والتسجيل يُطلب عند الضغط على الاشتراك
     if (!AUTH_TOKEN || !USER_EMAIL) return renderSubscribePickerScreen(null, false, false);
-    const res = await fetch(WORKER_URL + '?action=subscription_status&token=' + encodeURIComponent(AUTH_TOKEN));
+    // اشتراكات المستخدم: أكثر من واحد ← نافذة اختيار، واحد ← مباشرة لحالته
+    let subs = { items: [] };
+    try {
+      const sr = await fetch(WORKER_URL + '?action=my_subscriptions&token=' + encodeURIComponent(AUTH_TOKEN));
+      const sj = await sr.json();
+      if (sj && sj.items) subs = sj;
+    } catch (e) {}
+    if (subs.items.length >= 2 || (forcePicker === true && subs.items.length >= 1)) return renderSubscriptionChooser(subs.items);
+    const q = subs.items.length === 1
+      ? '&tier=' + encodeURIComponent(subs.items[0].tier) + '&country=' + encodeURIComponent(subs.items[0].country || '')
+      : '';
+    const res = await fetch(WORKER_URL + '?action=subscription_status&token=' + encodeURIComponent(AUTH_TOKEN) + q);
     const status = await res.json();
-    if (status.stage === 'franchise') return renderFranchiseScreen(status.franchise);
-    if (status.stage === 'active' && tierInfoIsMovementLike(status.tier)) return renderMembershipActiveScreen(status);
-    if (status.stage === 'awaiting_otp') return renderSubscribeOtpScreen(status);
-    if (status.stage === 'awaiting_review') return renderSubscribePendingScreen(status);
-    // ✅ جديد: مسجّل في قائمة الانتظار — السوق لسه في طور التكوين
-    if (status.stage === 'waitlisted') {
-      return status.category === 'movement' ? renderPreSubscribedScreen(status) : renderWaitlistedScreen(status);
-    }
-    renderSubscribePickerScreen(status.availability, !!status.marketComplete, true);
-    const pend = gateTakePendingOffer();
-    if (pend) renderGateOffer(pend.offerKey, pend.variantTier);
-    return;
+    return routeSubscriptionStatus(status);
   } catch(e) {
     renderSubscribePickerScreen(null, false, !!(AUTH_TOKEN && USER_EMAIL));
   }
+}
+
+const SUB_STAGE_LABEL = {
+  active: ['✅ فعّال', '#6EE7B7'], awaiting_review: ['⏳ بانتظار مراجعة الأدمن', '#FDBA74'],
+  awaiting_otp: ['💳 بانتظار إكمال الدفع', '#FCD34D'], waitlisted: ['📝 في قائمة الانتظار', '#93C5FD']
+};
+function renderSubscriptionChooser(items) {
+  const cards = items.map((it, i) => {
+    const lab = SUB_STAGE_LABEL[it.stage] || ['', '#ccc'];
+    const meta = TIER_META[it.tier] || {};
+    const extra = it.stage === 'active' && it.endDate ? '<div style="font-size:10.5px;color:var(--text-faint);margin-top:2px;">حتى ' + esc(String(it.endDate).slice(0, 10)) + '</div>' : '';
+    return `<button data-sub-idx="${i}" style="width:100%;text-align:right;padding:14px;margin-bottom:10px;border:1px solid var(--glass-border);border-radius:14px;background:rgba(255,255,255,0.04);color:var(--text);cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <span style="font-size:14px;font-weight:700;">${esc(meta.badge || '')} ${esc(it.tierName || tierNameAr(it.tier))}</span>
+        <span style="font-size:11px;color:${lab[1]};">${lab[0]}</span>
+      </div>${extra}</button>`;
+  }).join('');
+  subscribeGateShell(`
+    <div style="font-size:15px;color:#ccc;margin-bottom:6px;">اشتراكاتك</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">اختر الاشتراك الذي تريد الدخول إليه</div>
+    ${cards}
+    <button id="subAddAnotherBtn" style="width:100%;padding:12px;border:1px dashed var(--gold);border-radius:12px;background:transparent;color:var(--gold);font-size:13px;cursor:pointer;">+ اشترك في باقة أخرى</button>
+  `);
+  document.querySelectorAll('[data-sub-idx]').forEach(b => b.onclick = () => pickSubscription(items[+b.dataset.subIdx]));
+  document.getElementById('subAddAnotherBtn').onclick = async () => {
+    try {
+      const r = await fetch(WORKER_URL + '?action=subscription_status&token=' + encodeURIComponent(AUTH_TOKEN) + '&tier=none');
+      const st = await r.json();
+      renderSubscribePickerScreen(st.availability, !!st.marketComplete, true);
+    } catch (e) { renderSubscribePickerScreen(null, false, true); }
+  };
+}
+async function pickSubscription(it) {
+  currentSubCtx = { tier: it.tier, country: it.country || '' };
+  if (currentRole === 'participant' && it.stage === 'active') {
+    setSpace(['oms_services', 'oms_products', 'oms_vip'].indexOf(it.tier) !== -1 ? 'market' : 'data');
+    closeSubscribeGateModal(); applySpace(); return;
+  }
+  document.getElementById('subscribeGateModalBody').innerHTML =
+    '<div style="text-align:center;padding:60px 20px;color:var(--text-dim);">جاري التحميل...</div>';
+  try {
+    const r = await fetch(WORKER_URL + '?action=subscription_status&token=' + encodeURIComponent(AUTH_TOKEN) +
+      '&tier=' + encodeURIComponent(it.tier) + '&country=' + encodeURIComponent(it.country || ''));
+    routeSubscriptionStatus(await r.json());
+  } catch (e) { showNotif('فشل الاتصال'); }
+}
+// بعد دخول مشترك له أكثر من اشتراك فعّال: تُعرض نافذة الاختيار مرة واحدة في الجلسة
+async function maybeShowSubscriptionChooser() {
+  if (!AUTH_TOKEN || !USER_EMAIL) return;
+  try { if (sessionStorage.getItem('lavndr_chooser_done') === '1') return; } catch (e) {}
+  try {
+    const r = await fetch(WORKER_URL + '?action=my_subscriptions&token=' + encodeURIComponent(AUTH_TOKEN));
+    const j = await r.json();
+    try { sessionStorage.setItem('lavndr_chooser_done', '1'); } catch (e) {}
+    if (j && j.items && j.items.length >= 2) {
+      document.getElementById('subscribeGateModal').style.display = 'block';
+      subscribeGateDismissedByUser = false;
+      renderSubscriptionChooser(j.items);
+    }
+  } catch (e) {}
 }
 function tierInfoIsMovementLike(tier) {
   return ['reseller', 'tycoon', 'oms_services', 'oms_products', 'oms_vip'].indexOf(tier) !== -1;
@@ -1066,21 +1189,21 @@ const GATE_THEMES = {
 // نصوص العروض (التسويقية الرسمية). path: joinup | movement
 const GATE_OFFERS = {
   oms: {
-    path: 'joinup', theme: 'teal', icon: '📲', title: 'OMS', eyebrow: 'للبزنسات والبراندات فقط',
+    path: 'movement', theme: 'teal', icon: '📲', title: 'OMS', eyebrow: 'للبزنسات والبراندات فقط',
     short: 'نظام إدارة الطلبات — خليك لاصق في هواتف عملائك بلمسة.',
     body: 'ما الذي يحدث لما تمحو المسافات؟\n• تمحو الفجوة\n• تمحو الزمن\n— بلمسة.\n\nنظام إدارة الطلبات OMS يعمل من الويب وعلى أندرويد لتبقى ملتصقًا في هواتف المستفيدين من خدمتك أو منتجك.',
     variants: [
       { tier: 'oms_services', label: 'براند خدمات', price: '429', period: 'اشتراك' },
       { tier: 'oms_products', label: 'براند منتجات', price: '492', period: 'اشتراك' },
       { tier: 'oms_vip', label: 'OMS VIP', price: '942', period: 'اشتراك',
-        note: 'لبراند منتجات أو خدمات. القيمة مقسّمة إلى جزأين: قيمة التطبيق $429 + مقعد الدخول إلى سوق التداول الداخلي $513.' }
+        note: 'لبراند منتجات أو خدمات. القيمة مقسّمة إلى جزأين: قيمة التطبيق $429 + مقعد المشارك $513.' }
     ],
     cta: 'ابدأ اشتراك OMS'
   },
   lava: {
     path: 'joinup', theme: 'plain', icon: '🌋', title: 'لاڤا', eyebrow: 'داتا السوق',
     short: 'لاڤا هي داتا السوق نفسها — مش لازم تكون من الـ120.',
-    body: 'ماذا لو ما بقيت تشوف السوق من الخارج بس؟\nلاڤندرز بدأت بـ120 بزنس وبراند، ولما اجتمعت الطلبات ظهر سوق له حركة ومؤشر استهلاكي وداتا بتتكوّن مع كل حركة. سمّينا الداتا دي لاڤا.\n\nلاڤا مش تقرير بتقرأه، ولا أرقام بتتفرج عليها — لاڤا هي داتا السوق. الـ120 بيكوّنوا السوق، وإنت تقدر تدخل وتستخدم اللاڤا.\n(للمطالعة فقط — بدون حصة ولا وصول للسوق الداخلي.)',
+    body: 'ماذا لو ما بقيت تشوف السوق من الخارج بس؟\nلاڤندرز بدأت بـ120 بزنس وبراند، ولما اجتمعت الطلبات ظهر سوق له حركة ومؤشر استهلاكي وداتا بتتكوّن مع كل حركة. سمّينا الداتا دي لاڤا.\n\nلاڤا مش تقرير بتقرأه، ولا أرقام بتتفرج عليها — لاڤا هي داتا السوق. الـ120 بيكوّنوا السوق، وإنت تقدر تدخل وتستخدم اللاڤا.\n(للمطالعة فقط.)',
     variants: [
       { tier: 'lava', label: 'يوم واحد', price: '1.4', period: '/ يوم' },
       { tier: 'annual', label: 'سنة كاملة', price: '249', period: '/ سنة' }
@@ -1127,13 +1250,13 @@ const GATE_OFFERS = {
 const GATE_PATHS = {
   joinup: {
     title: 'Join Up LAVENDERS', icon: '🔗', theme: 'plain',
-    sub: 'ادخل السوق: بيانات، ذكاء، وأدوات الأعمال.',
-    offers: ['oms', 'lava', 'fendex', 'magma']
+    sub: 'ادخل السوق: بيانات السوق وتقارير الذكاء ودليل الأنشطة.',
+    offers: ['lava', 'fendex', 'magma']
   },
   movement: {
     title: 'Join the Economic Movement', icon: '🌍', theme: 'emerald',
     sub: 'شارك في بناء السوق. أنت لا تشتري منتجًا — أنت تنضم إلى حركة تبني سوقًا.',
-    offers: ['reseller', 'franchise', 'tycoon']
+    offers: ['oms', 'reseller', 'franchise', 'tycoon']
   }
 };
 
@@ -1207,7 +1330,7 @@ function renderSubscribePickerScreen(availability, marketComplete, loggedIn) {
       LAVENDERS منظومة واحدة. اختر كيف تريد أن تكون جزءًا منها:
     </div>
     <div style="font-size:11px;color:#777;margin-bottom:20px;line-height:1.7;">
-      <b style="color:var(--gold);">Join Up</b> = دخول إلى السوق وبياناته وأدواته &nbsp;·&nbsp; <b style="color:#6EE7B7;">الحركة الاقتصادية</b> = المشاركة في <u>بناء</u> السوق
+      <b style="color:var(--gold);">Join Up</b> = دخول إلى السوق وبياناته وتقاريره &nbsp;·&nbsp; <b style="color:#6EE7B7;">البناء والحركة الاقتصادية</b> = المشاركة في <u>بناء</u> السوق (OMS · ريسيلر · فرانشايز · تايكون)
     </div>
     ${tile('joinup')}
     ${tile('movement')}
@@ -1244,9 +1367,7 @@ function renderGatePath(pathKey) {
         </div>
       </div>`;
   }).join('');
-  const omsHint = pathKey === 'movement'
-    ? `<div onclick="renderGateOffer('oms')" style="cursor:pointer;font-size:12px;color:var(--text-dim);margin:4px 0 8px;line-height:1.8;">أنت بزنس أو براند؟ بوابتك إلى بناء السوق هي <b style="color:#99F6E4;">OMS</b> ← </div>`
-    : '';
+  const omsHint = '';
   subscribeGateShell(`
     ${gateSteps(1)}
     ${gateBackBtn('showSubscribeGate()', 'المسارات')}
@@ -1275,7 +1396,7 @@ function renderGateOffer(offerKey, variantTier) {
     ? `<div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;margin:12px 0;font-size:12px;color:${t.body};line-height:1.9;text-align:right;">
          <b>تفصيل قيمة OMS VIP — $942</b><br>
          • قيمة التطبيق: <b>$429</b><br>
-         • مقعد الدخول إلى سوق التداول الداخلي: <b>$513</b>
+         • مقعد المشارك: <b>$513</b>
        </div>` : '';
   const scarcity = (rem && avail)
     ? `<div style="display:inline-block;margin-top:6px;padding:4px 10px;border-radius:100px;background:rgba(244,63,94,0.18);border:1px solid rgba(244,63,94,0.4);color:#FCA5A5;font-size:10.5px;font-weight:700;">🔥 باقي ${rem.remaining.toLocaleString('en-US')} مكان من ${rem.max.toLocaleString('en-US')}</div>` : '';
@@ -1377,8 +1498,7 @@ async function startSubscribe(tier) {
     });
     const data = await res.json();
     if (data.code === 401) { clearSessionAndReset('انتهت الجلسة — سجّل الدخول تاني'); return; }
-    // ✅ جديد: نفس معالجة 451 من buyShare — لسه ما وافقش على الشروط
-    if (data.code === 451) { showTermsModal(); return; }
+    if (data.code === 451) { reEnable(); showTermsModal(tier, () => startSubscribe(tier)); return; }
     if (data.error) { if (msgEl) msgEl.textContent = data.message || data.error; reEnable(); return; }
     if (data.status === 'already_active') { location.reload(); return; }
     // السوق قيد البناء: طلبه اتحفظ — الحركة الاقتصادية ← ما قبل الاشتراك + واتساب؛ غيرها ← قائمة الانتظار
@@ -1424,7 +1544,7 @@ async function payFranchise() {
     });
     const data = await res.json();
     if (data.code === 401) { clearSessionAndReset('انتهت الجلسة — سجّل الدخول تاني'); return; }
-    if (data.code === 451) { showTermsModal(); return; }
+    if (data.code === 451) { showTermsModal('franchise', () => payFranchise()); return; }
     if (data.error) { if (msgEl) msgEl.textContent = data.error; return; }
     if (data.stage === 'awaiting_review') return renderSubscribePendingScreen();
     if (data.status === 'completed') return showSubscribeGate();
@@ -1459,11 +1579,12 @@ const TIER_META = {
 function tierNameAr(tier) { return (TIER_META[tier] && TIER_META[tier].nameAr) || tier; }
 
 async function renderSubscribeOtpScreen(status) {
+  if (status.tier) currentSubCtx = { tier: status.tier, country: status.country || currentSubCtx.country || '' };
   // بيانات الحساب البنكي تُعرض هنا مباشرة (مع نسخ بضغطة) بدل إجبار المستخدم على البحث في الإيميل
   let bank = status.bank || null;
   if (!bank) {
     try {
-      const r = await fetch(WORKER_URL + '?action=subscription_status&token=' + encodeURIComponent(AUTH_TOKEN));
+      const r = await fetch(WORKER_URL + '?action=subscription_status&token=' + encodeURIComponent(AUTH_TOKEN) + '&tier=' + encodeURIComponent(currentSubCtx.tier) + '&country=' + encodeURIComponent(currentSubCtx.country));
       const st = await r.json();
       if (st && st.bank) { bank = st.bank; if (!status.amount) status.amount = st.amount; }
     } catch (e) {}
@@ -1511,7 +1632,7 @@ async function submitSubscribeOtp() {
     const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'verify_subscription', otp, txnRef, token: AUTH_TOKEN })
+      body: JSON.stringify({ action: 'verify_subscription', otp, txnRef, tier: currentSubCtx.tier, country: currentSubCtx.country, token: AUTH_TOKEN })
     });
     const data = await res.json();
     if (data.code === 401) { clearSessionAndReset('انتهت الجلسة — سجّل الدخول تاني'); return; }
@@ -1539,6 +1660,7 @@ function renderSubscribePendingScreen() {
 // رسالة خفيفة ومطمئنة، بدون أي إجراء مطلوب من المشترك، وشفافة بعرض التقدم
 // الفعلي (كام نشاط جاهز من أصل الهدف) بدل "استنى" من غير أي سياق.
 function renderWaitlistedScreen(status) {
+  if (status.tier) currentSubCtx = { tier: status.tier, country: status.country || currentSubCtx.country || '' };
   const ready = status.readyCount || 0;
   const target = status.targetCount || 120;
   const pct = target > 0 ? Math.min(100, Math.round((ready / target) * 100)) : 0;
@@ -1558,8 +1680,34 @@ function renderWaitlistedScreen(status) {
         <div style="height:100%;width:${pct}%;background:var(--gold);border-radius:100px;"></div>
       </div>
     </div>
-    <button onclick="showSubscribeGate()" style="padding:10px 20px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass);color:var(--text-dim);font-size:13px;cursor:pointer;">تحقق تاني</button>
+    <div style="background:linear-gradient(135deg,rgba(201,168,76,0.14),rgba(110,231,183,0.08));border:1px solid rgba(201,168,76,0.4);border-radius:14px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:4px;">🚀 كن من الأوائل</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">أكمل اشتراكك الآن لتأمين مكانك في الباقة قبل اكتمال السوق. تصلك تفاصيل الدفع ورمز التحقق على بريدك، وتحفظ لك المنصة تقدّمك لتكمل متى شئت.</div>
+    </div>
+    <button id="prepayBtn" onclick="prepayNow()" style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#F0D080,#C9A84C);color:#1a1230;font-weight:900;font-size:15px;cursor:pointer;">اشترك الآن — تابع للدفع</button>
+    <div id="subscribeMsg" style="margin-top:10px;font-size:12px;color:var(--red);"></div>
+    <button onclick="showSubscribeGate()" style="margin-top:10px;padding:10px 20px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass);color:var(--text-dim);font-size:13px;cursor:pointer;">سأنتظر — تحقق لاحقاً</button>
   `);
+}
+async function prepayNow() {
+  const msgEl = document.getElementById('subscribeMsg');
+  const btn = document.getElementById('prepayBtn');
+  if (msgEl) msgEl.textContent = 'جاري إرسال تفاصيل الدفع إلى بريدك...';
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+  const reEnable = () => { if (btn) { btn.disabled = false; btn.style.opacity = '1'; } };
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'subscription_prepay', tier: currentSubCtx.tier, country: currentSubCtx.country, token: AUTH_TOKEN })
+    });
+    const data = await res.json();
+    if (data.code === 401) { clearSessionAndReset('انتهت الجلسة — سجّل الدخول تاني'); return; }
+    if (data.code === 451) { reEnable(); showTermsModal(currentSubCtx.tier, () => prepayNow()); return; }
+    if (data.error) { if (msgEl) msgEl.textContent = data.error; reEnable(); return; }
+    if (data.status === 'already_active') { location.reload(); return; }
+    if (data.stage === 'awaiting_review') return renderSubscribePendingScreen();
+    renderSubscribeOtpScreen({ tier: data.tier, amount: data.amount, country: currentSubCtx.country });
+  } catch (e) { if (msgEl) msgEl.textContent = 'فشل الاتصال'; reEnable(); }
 }
 
 // ── تهيئة Google Identity Services + تسجيل دخول تلقائي لو الجلسة لسه صالحة ──
@@ -1587,9 +1735,9 @@ window.addEventListener('load', function() {
 function renderAll(data) {
   renderNAV(data);
   renderFund(data);
+  renderMarket(data);
   renderChart(data);
   renderStats(data);
-  renderMarket(data);
   renderComponents(data);
   renderOrderAnalysis(data); // ✅ جديد
   renderHistory(data);
@@ -1819,34 +1967,6 @@ function renderStats(data) {
   document.getElementById('totalUnits').textContent  = data.index.netUnits;
   document.getElementById('premium').textContent     = data.index.premium + '%';
   document.getElementById('iivVal').textContent      = '$' + data.index.IIV;
-}
-
-function renderMarket(data) {
-  if (!data.fund) return;
-  const list = data.fund.market || [];
-  const el   = document.getElementById('marketList');
-  if (list.length === 0) {
-    // ✅ جديد: تمييز "مفيش عروض حالياً" عن "أصلاً ما عندكش صلاحية تشوف السوق" —
-    // بعد إصلاح تسريب الخصوصية، المشتركين (لافا/سنوي) بيوصلهم array فاضي دايماً هنا
-    el.innerHTML = ['subscriber', 'fendex', 'magma'].includes(data.role)
-      ? '<div class="market-empty">🔒 السوق الداخلي متاح فقط للمشاركين الفعليين بالصندوق</div>'
-      : '<div class="market-empty">لا توجد حصص معروضة حالياً</div>';
-    return;
-  }
-  el.innerHTML = list.map(m => `
-    <div class="market-item">
-      <div>
-        <div class="market-seller">${esc(m.seller)}</div>
-        <div style="font-size:10px;color:var(--text-faint);margin-top:2px;">T+2</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="market-price">$${m.shareValue}</div>
-        ${USER_EMAIL && USER_EMAIL !== m.seller
-          ? `<button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="buyShare(${m.row}, ${m.shareValue})">شراء</button>`
-          : ''}
-      </div>
-    </div>
-  `).join('');
 }
 
 // ✅ جديد: أكثر المنتجات طلبًا + شراء/استرداد + مؤشر "آخر تحديث" — من نفس بيانات
@@ -2158,7 +2278,7 @@ async function buyShare(marketRow, shareValue) {
       if (data.code === 401) { clearSessionAndReset(); return; }
       // ✅ جديد: 451 = لسه ما وافقش على شروط الاستخدام — نفتحلها الشاشة تلقائيًا
       // بدل ما يشوف رسالة خطأ عامة مربكة "terms_required"
-      if (data.code === 451) { showTermsModal(); return; }
+      if (data.code === 451) { showTermsModal('business_agreement', () => buyShare(marketRow, shareValue)); return; }
       showNotif('خطأ: ' + data.error);
       if (marketRow) await loadData(); // الحصة المحددة بقت غير متاحة — نحدّث قائمة السوق
       return;
@@ -2172,41 +2292,6 @@ async function buyShare(marketRow, shareValue) {
     showNotif('✓ تمت العملية بنجاح');
     await loadData();
   } catch(e) { showNotif('فشل الاتصال'); }
-}
-
-// ✅ جديد: شاشة شروط الاستخدام — بتظهر تلقائيًا لو الباك اند رجّع code:451
-async function showTermsModal() {
-  document.getElementById('termsModal').style.display = 'block';
-  document.getElementById('termsModalBody').textContent = 'جاري التحميل...';
-  document.getElementById('termsCheckbox').checked = false;
-  try {
-    const res = await fetch(WORKER_URL + '?action=terms&token=' + encodeURIComponent(AUTH_TOKEN));
-    const data = await res.json();
-    if (data.code === 401) { clearSessionAndReset(); return; }
-    document.getElementById('termsModalBody').textContent = data.text || 'تعذّر تحميل الشروط';
-  } catch(e) {
-    document.getElementById('termsModalBody').textContent = 'تعذّر تحميل الشروط — تأكد من اتصالك بالإنترنت.';
-  }
-}
-
-async function acceptTerms() {
-  // ✅ جديد: نتحقق إن الشيك بوكس متعلّم فعلاً — منع موافقة عرضية بدون قراءة حقيقية
-  if (!document.getElementById('termsCheckbox').checked) {
-    showNotif('لازم تعلّم على المربع إنك قرأت ووافقت أولاً');
-    return;
-  }
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'accept_terms', token: AUTH_TOKEN })
-    });
-    const data = await res.json();
-    if (data.code === 401) { clearSessionAndReset(); return; }
-    if (data.error) { showNotif('خطأ: ' + data.error); return; }
-    document.getElementById('termsModal').style.display = 'none';
-    showNotif('✓ تم — كمّل العملية اللي كنت بتعملها');
-  } catch(e) { showNotif('فشل الاتصال — حاول تاني'); }
 }
 
 // ✅ جديد: مودال التحويل البنكي + إدخال OTP ورقم المعاملة
@@ -2311,6 +2396,48 @@ async function sellShare() {
     showNotif('✓ حصتك معروضة في السوق');
     await loadData();
   } catch(e) { showNotif('فشل الاتصال'); }
+}
+
+// ── شروط الباقة ──
+// لكل مسار وباقة نص شروط خاص بها، وتُسجَّل الموافقة لكل باقة على حدة.
+let pendingTermsTier = null, pendingTermsRetry = null;
+async function showTermsModal(tier, retry) {
+  pendingTermsTier = tier || null;
+  pendingTermsRetry = retry || null;
+  document.getElementById('termsModal').style.display = 'block';
+  document.getElementById('termsModalBody').textContent = 'جاري التحميل...';
+  document.getElementById('termsCheckbox').checked = false;
+  try {
+    const res = await fetch(WORKER_URL + '?action=terms&tier=' + encodeURIComponent(tier || '') + '&token=' + encodeURIComponent(AUTH_TOKEN));
+    const data = await res.json();
+    if (data.code === 401) { clearSessionAndReset(); return; }
+    document.getElementById('termsModalBody').textContent = data.text || 'تعذّر تحميل الشروط';
+  } catch(e) {
+    document.getElementById('termsModalBody').textContent = 'تعذّر تحميل الشروط — تأكد من اتصالك بالإنترنت.';
+  }
+}
+function declineTerms() {
+  document.getElementById('termsModal').style.display = 'none';
+  pendingTermsTier = null; pendingTermsRetry = null;
+}
+async function acceptTerms() {
+  if (!document.getElementById('termsCheckbox').checked) {
+    showNotif('لازم تعلّم على المربع إنك قرأت ووافقت أولاً');
+    return;
+  }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'accept_terms', tier: pendingTermsTier, token: AUTH_TOKEN })
+    });
+    const data = await res.json();
+    if (data.code === 401) { clearSessionAndReset(); return; }
+    if (data.error) { showNotif('خطأ: ' + data.error); return; }
+    document.getElementById('termsModal').style.display = 'none';
+    const retry = pendingTermsRetry; pendingTermsRetry = null;
+    if (retry) retry();
+  } catch(e) { showNotif('فشل الاتصال — حاول تاني'); }
 }
 
 // ── Notifications ──
