@@ -218,6 +218,12 @@ async function handleCredentialResponse(response) {
       document.getElementById('gsiButtonWrap').style.display = 'block';
       return;
     }
+    // ✅ حماية: غير الأدمن لا يُحفظ له توكن ولا يرى اللوحة إطلاقاً (التحقق الحقيقي في الخادم أيضاً)
+    if (data.role !== 'admin') {
+      document.getElementById('loginMsg').textContent = 'هذا الحساب (' + (data.email || '') + ') غير مخوّل بلوحة الأدمن';
+      document.getElementById('gsiButtonWrap').style.display = 'block';
+      return;
+    }
     AUTH_TOKEN = data.token; USER_EMAIL = data.email;
     sessionStorage.setItem('lavndr_admin_token', AUTH_TOKEN);
     sessionStorage.setItem('lavndr_admin_email', USER_EMAIL);
@@ -228,21 +234,30 @@ async function handleCredentialResponse(response) {
   }
 }
 
-function boot() {
+async function boot() {
+  // الواجهة تبقى مخفية حتى يتأكد الخادم أن هذا الحساب أدمن فعلاً
+  document.getElementById('mainWrap').style.display = 'none';
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('gsiButtonWrap').style.display = 'none';
+  document.getElementById('loginMsg').textContent = 'جاري التحقق من الصلاحية...';
+  try {
+    const res = await fetch(WORKER_URL + '?action=admin_pending_subscriptions&token=' + encodeURIComponent(AUTH_TOKEN));
+    const txt = await res.text();
+    let d; try { d = JSON.parse(txt); } catch (e) { d = null; }
+    if (!d) { showGateError('رد غير متوقع من الخادم (HTTP ' + res.status + '): ' + txt.slice(0, 120)); return; }
+    if (d.code === 401 || d.code === 403) { clearSessionAndReset(d.code === 403 ? 'هذا الحساب غير مخوّل بلوحة الأدمن' : d.error); return; }
+    if (d.error) { showGateError(d.error); return; }
+  } catch (e) { showGateError('تعذّر الاتصال بالخادم: ' + e.message); return; }
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   document.getElementById('adminEmailLabel').textContent = USER_EMAIL;
-  loadSubscriptions();
-  loadParticipants();
-  loadAuditLog();
-  loadEntitlements();
-  loadBusinessList();
-  loadApEarnings(); // ✅ جديد
-  loadCapacity(); // ✅ جديد
-  loadWaitlist(); // ✅ جديد
-  loadFranchises();
-  loadOmsMembers();
-  loadBusinessRequests();
+  // تحميل متدرّج (دفعتان) لتخفيف الضغط على الخادم
+  loadSubscriptions(); loadParticipants(); loadEntitlements(); loadBusinessList();
+  setTimeout(() => { loadAuditLog(); loadApEarnings(); loadCapacity(); loadWaitlist(); loadFranchises(); loadOmsMembers(); loadBusinessRequests(); }, 1500);
+}
+function showGateError(msg) {
+  document.getElementById('loginMsg').textContent = '⚠️ ' + msg;
+  document.getElementById('gsiButtonWrap').style.display = 'block';
 }
 
 // ✅ جديد: عرض حافز الـAP التراكمي
@@ -461,8 +476,11 @@ function esc(str) {
 
 async function authGet(action) {
   const res = await fetch(WORKER_URL + '?action=' + action + '&token=' + encodeURIComponent(AUTH_TOKEN));
-  const data = await res.json();
+  const txt = await res.text();
+  let data; try { data = JSON.parse(txt); } catch (e) { data = null; }
+  if (!data) { showToast('خطأ في ' + action + ' (HTTP ' + res.status + ')'); throw new Error('bad response'); }
   if (data.code === 401 || data.code === 403) { clearSessionAndReset(data.error); throw new Error('denied'); }
+  if (data.error) { showToast(action + ': ' + data.error); }
   return data;
 }
 
